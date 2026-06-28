@@ -120,7 +120,7 @@ export default function SearchingVisualizer({ initialAlgorithm = 'binary' }: Pro
       {/* Array visualization */}
       <div className="bg-bg-surface border border-bg-overlay rounded-xl p-4 space-y-4">
         {/* Target indicator */}
-        <div className="flex items-center gap-2 text-sm">
+        <div className="flex flex-wrap items-center gap-2 text-sm">
           <Target size={14} className="text-orange-400" />
           <span className="text-slate-400">Target:</span>
           <span className="font-mono font-bold text-orange-300 text-lg">{targetValue}</span>
@@ -137,14 +137,14 @@ export default function SearchingVisualizer({ initialAlgorithm = 'binary' }: Pro
         </div>
 
         {/* Array cells */}
-        <div className="overflow-x-auto pb-2">
-          <div className="flex gap-1.5 min-w-max">
+        <div className="overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="flex gap-1.5 min-w-max sm:min-w-0">
             {(currentFrame?.array ?? inputArray).map((val, idx) => {
               const colors = currentFrame ? cellColor(idx, currentFrame) : { bg: 'bg-bg-elevated', border: 'border-bg-overlay', text: 'text-slate-400' };
               return (
                 <div key={idx} className="flex flex-col items-center gap-1">
                   <div
-                    className={`w-10 h-10 flex items-center justify-center rounded-lg border font-mono text-sm font-medium transition-all duration-150 ${colors.bg} ${colors.border} ${colors.text}`}
+                    className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg border font-mono text-xs sm:text-sm font-medium transition-all duration-150 ${colors.bg} ${colors.border} ${colors.text}`}
                   >
                     {val}
                   </div>
@@ -157,7 +157,7 @@ export default function SearchingVisualizer({ initialAlgorithm = 'binary' }: Pro
 
         {/* Range indicators (for binary/jump) */}
         {currentFrame && (currentFrame.low !== undefined || currentFrame.mid !== undefined) && (
-          <div className="flex gap-4 text-xs">
+          <div className="flex flex-wrap gap-3 text-xs">
             {currentFrame.low >= 0 && (
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-blue-400" />
@@ -221,18 +221,18 @@ export default function SearchingVisualizer({ initialAlgorithm = 'binary' }: Pro
         onSpeedChange={setSpeed}
         onSeek={setFrameIdx}
         extraControls={
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <label className="text-xs text-slate-400">Target value:</label>
               <input
                 type="number"
                 value={targetInput}
                 onChange={e => handleTargetChange(e.target.value)}
                 disabled={playing}
-                className="w-20 bg-bg-elevated border border-bg-overlay rounded-lg px-2 py-1 text-xs font-mono text-white focus:outline-none focus:border-brand disabled:opacity-40"
+                className="w-full sm:w-20 bg-bg-elevated border border-bg-overlay rounded-lg px-2 py-1 text-xs font-mono text-white focus:outline-none focus:border-brand disabled:opacity-40"
               />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <label className="text-xs text-slate-400">Size: {arraySize}</label>
               <input
                 type="range"
@@ -241,13 +241,13 @@ export default function SearchingVisualizer({ initialAlgorithm = 'binary' }: Pro
                 value={arraySize}
                 onChange={e => setArraySize(Number(e.target.value))}
                 disabled={playing}
-                className="w-20 accent-emerald-500"
+                className="w-full sm:w-20 accent-emerald-500"
               />
             </div>
             <button
               onClick={handleNewArray}
               disabled={playing}
-              className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-bg-elevated hover:bg-bg-overlay text-slate-300 hover:text-white rounded-lg transition-colors disabled:opacity-40"
+              className="flex items-center justify-center gap-1.5 text-xs px-3 py-1.5 bg-bg-elevated hover:bg-bg-overlay text-slate-300 hover:text-white rounded-lg transition-colors disabled:opacity-40 w-full sm:w-auto"
             >
               <RefreshCw size={12} />
               New Array

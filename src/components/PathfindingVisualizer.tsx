@@ -57,6 +57,8 @@ export default function PathfindingVisualizer({ initialAlgorithm = 'bfs' }: Prop
   const [speed, setSpeed] = useState<Speed>('fast');
   const [hasRun, setHasRun] = useState(false);
   const [noPath, setNoPath] = useState(false);
+  const isPointerDownRef = useRef(false);
+  const lastTouchedCellRef = useRef<string | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const meta = useMemo(() => algorithms.find(a => a.id === selectedAlgo)!, [algorithms, selectedAlgo]);
@@ -106,10 +108,51 @@ export default function PathfindingVisualizer({ initialAlgorithm = 'bfs' }: Prop
     setNoPath(false);
   }, [drawMode, playing, startCell, endCell]);
 
-  const handleMouseEnter = useCallback((row: number, col: number) => {
-    if (!isMouseDown || drawMode === 'start' || drawMode === 'end') return;
-    handleCellInteract(row, col);
-  }, [isMouseDown, drawMode, handleCellInteract]);
+  const getCellCoordsFromTarget = useCallback((target: EventTarget | null): [number, number] | null => {
+    if (!(target instanceof HTMLElement)) return null;
+    const cellElement = target.closest<HTMLElement>('[data-row][data-col]');
+    if (!cellElement) return null;
+
+    const row = Number(cellElement.dataset.row);
+    const col = Number(cellElement.dataset.col);
+    if (Number.isNaN(row) || Number.isNaN(col)) return null;
+    return [row, col];
+  }, []);
+
+  const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (playing) return;
+    const coords = getCellCoordsFromTarget(e.target);
+    if (!coords) return;
+
+    isPointerDownRef.current = true;
+    lastTouchedCellRef.current = cellKey(coords[0], coords[1]);
+    if (e.pointerType === 'touch') {
+      e.preventDefault();
+    }
+    handleCellInteract(coords[0], coords[1]);
+  }, [getCellCoordsFromTarget, handleCellInteract, playing]);
+
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isPointerDownRef.current || playing) return;
+    if (drawMode === 'start' || drawMode === 'end') return;
+
+    const coords = getCellCoordsFromTarget(e.target);
+    if (!coords) return;
+
+    const key = cellKey(coords[0], coords[1]);
+    if (key === lastTouchedCellRef.current) return;
+
+    lastTouchedCellRef.current = key;
+    if (e.pointerType === 'touch') {
+      e.preventDefault();
+    }
+    handleCellInteract(coords[0], coords[1]);
+  }, [drawMode, getCellCoordsFromTarget, handleCellInteract, playing]);
+
+  const stopPointerInteraction = useCallback(() => {
+    isPointerDownRef.current = false;
+    lastTouchedCellRef.current = null;
+  }, []);
 
   const handleVisualize = () => {
     if (playing) return;
@@ -128,6 +171,7 @@ export default function PathfindingVisualizer({ initialAlgorithm = 'bfs' }: Prop
   const handleReset = () => {
     setPlaying(false);
     if (intervalRef.current) clearInterval(intervalRef.current);
+    stopPointerInteraction();
     setFrames([]);
     setFrameIdx(-1);
     setHasRun(false);
@@ -197,12 +241,12 @@ export default function PathfindingVisualizer({ initialAlgorithm = 'bfs' }: Prop
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-col lg:flex-row lg:items-center gap-2">
         {/* Draw modes */}
-        <div className="flex bg-bg-elevated rounded-lg p-1 gap-1">
+        <div className="flex flex-wrap bg-bg-elevated rounded-lg p-1 gap-1 w-full lg:w-auto">
           {([
-            { mode: 'wall' as DrawMode, Icon: Square, label: 'Wall' },
-            { mode: 'erase' as DrawMode, Icon: Eraser, label: 'Erase' },
+            { mode: 'wall' as DrawMode, Icon: Square, label: 'Wall', color: undefined },
+            { mode: 'erase' as DrawMode, Icon: Eraser, label: 'Erase', color: undefined },
             { mode: 'start' as DrawMode, label: 'Move Start', color: 'text-emerald-400' },
             { mode: 'end' as DrawMode, label: 'Move End', color: 'text-rose-400' },
           ] as const).map(({ mode, label, color }) => (
@@ -218,18 +262,18 @@ export default function PathfindingVisualizer({ initialAlgorithm = 'bfs' }: Prop
           ))}
         </div>
 
-        <div className="flex gap-2 ml-auto">
+        <div className="flex flex-col sm:flex-row gap-2 lg:ml-auto w-full lg:w-auto">
           <button
             onClick={handleClearWalls}
             disabled={playing}
-            className="flex items-center gap-1.5 text-xs px-3 py-2 bg-bg-elevated hover:bg-bg-overlay text-slate-300 rounded-lg transition-colors disabled:opacity-40"
+            className="flex items-center justify-center gap-1.5 text-xs px-3 py-2 bg-bg-elevated hover:bg-bg-overlay text-slate-300 rounded-lg transition-colors disabled:opacity-40 w-full sm:w-auto"
           >
             <RotateCcw size={12} />
             Clear
           </button>
           <button
             onClick={playing ? () => setPlaying(false) : handleVisualize}
-            className={`flex items-center gap-1.5 text-xs px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`flex items-center justify-center gap-1.5 text-xs px-4 py-2 rounded-lg font-medium transition-colors w-full sm:w-auto ${
               playing
                 ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
                 : 'bg-brand hover:bg-brand-dark text-white shadow-lg shadow-brand/25'
@@ -242,9 +286,9 @@ export default function PathfindingVisualizer({ initialAlgorithm = 'bfs' }: Prop
       </div>
 
       {/* Speed control */}
-      <div className="flex items-center gap-3 text-xs text-slate-400">
+      <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400">
         <span>Speed:</span>
-        <div className="flex bg-bg-elevated rounded-lg p-1 gap-1">
+        <div className="flex flex-wrap bg-bg-elevated rounded-lg p-1 gap-1">
           {(['slow', 'medium', 'fast', 'turbo'] as Speed[]).map(s => (
             <button
               key={s}
@@ -260,7 +304,7 @@ export default function PathfindingVisualizer({ initialAlgorithm = 'bfs' }: Prop
 
         {/* Stats */}
         {hasRun && (
-          <div className="flex gap-4 ml-4">
+          <div className="flex flex-wrap gap-4 sm:ml-4">
             <span>Visited: <span className="text-blue-400 font-mono">{visited}</span></span>
             {!noPath && <span>Path: <span className="text-amber-400 font-mono">{pathLen}</span> cells</span>}
             {noPath && <span className="text-rose-400">No path found!</span>}
@@ -270,22 +314,24 @@ export default function PathfindingVisualizer({ initialAlgorithm = 'bfs' }: Prop
 
       {/* Grid */}
       <div
-        className="bg-bg-surface border border-bg-overlay rounded-xl p-3 overflow-auto select-none"
-        onMouseLeave={() => setIsMouseDown(false)}
+        className="bg-bg-surface border border-bg-overlay rounded-xl p-2 sm:p-3 overflow-auto select-none"
       >
         <div
-          className="grid gap-px w-fit mx-auto"
+          className="grid gap-px w-full max-w-full mx-auto touch-none"
           style={{ gridTemplateColumns: `repeat(${COLS}, minmax(0, 1fr))` }}
-          onMouseUp={() => setIsMouseDown(false)}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={stopPointerInteraction}
+          onPointerCancel={stopPointerInteraction}
+          onPointerLeave={stopPointerInteraction}
         >
           {grid.map(row =>
             row.map(cell => (
               <div
                 key={cellKey(cell.row, cell.col)}
-                className={`w-4 h-4 sm:w-5 sm:h-5 border rounded-[2px] transition-all duration-75 ${getCellStyle(cell)}`}
-                onMouseDown={() => { setIsMouseDown(true); handleCellInteract(cell.row, cell.col); }}
-                onMouseEnter={() => handleMouseEnter(cell.row, cell.col)}
-                onTouchStart={(e) => { e.preventDefault(); handleCellInteract(cell.row, cell.col); }}
+                data-row={cell.row}
+                data-col={cell.col}
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 border rounded-[2px] transition-all duration-75 ${getCellStyle(cell)}`}
               />
             ))
           )}

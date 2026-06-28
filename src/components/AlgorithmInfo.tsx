@@ -12,7 +12,7 @@ export default function AlgorithmInfo({ meta }: AlgorithmInfoProps) {
   return (
     <div className="bg-bg-surface border border-bg-overlay rounded-xl p-4 space-y-4 text-sm animate-fade-in">
       {/* Header */}
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
           <h3 className="font-semibold text-white text-base">{meta.name}</h3>
           <p className="text-slate-400 text-xs mt-0.5">{meta.description}</p>
@@ -29,7 +29,7 @@ export default function AlgorithmInfo({ meta }: AlgorithmInfoProps) {
       </div>
 
       {/* Complexity table */}
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="bg-bg-elevated rounded-lg p-3 space-y-2">
           <div className="flex items-center gap-1.5 text-slate-400 text-xs font-medium uppercase tracking-wide">
             <Clock size={12} />
@@ -77,7 +77,7 @@ export default function AlgorithmInfo({ meta }: AlgorithmInfoProps) {
       </button>
 
       {showCode && (
-        <pre className="bg-bg-base rounded-lg p-3 text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed">
+        <pre className="bg-bg-base rounded-lg p-3 text-[11px] sm:text-xs font-mono text-slate-300 overflow-x-auto max-h-64 sm:max-h-none leading-relaxed">
           {meta.pseudoCode.join('\n')}
         </pre>
       )}

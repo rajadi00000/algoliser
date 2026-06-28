@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import Sidebar from './components/Sidebar';
-import BottomNav from './components/BottomNav';
 import HomePage from './components/HomePage';
 import SortingVisualizer from './components/SortingVisualizer';
 import SearchingVisualizer from './components/SearchingVisualizer';
@@ -34,6 +33,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [currentAlgorithm, setCurrentAlgorithm] = useState('bubble');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const navigate = (page: Page, algorithmId?: string) => {
     setCurrentPage(page);
@@ -44,6 +44,7 @@ export default function App() {
       const first = ALGORITHM_META.find(a => a.category === page);
       if (first) setCurrentAlgorithm(first.id);
     }
+    setMobileSidebarOpen(false);
   };
 
   const PageIcon = PAGE_ICONS[currentPage];
@@ -59,6 +60,8 @@ export default function App() {
         onNavigate={navigate}
         collapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed(v => !v)}
+        mobileOpen={mobileSidebarOpen}
+        onMobileClose={() => setMobileSidebarOpen(false)}
       />
 
       {/* Main content */}
@@ -67,7 +70,8 @@ export default function App() {
         <header className="sticky top-0 z-40 bg-bg-base/90 backdrop-blur border-b border-bg-overlay flex items-center gap-3 px-4 sm:px-6 h-16">
           <button
             className="md:hidden text-slate-400 hover:text-white"
-            onClick={() => setSidebarCollapsed(v => !v)}
+            onClick={() => setMobileSidebarOpen(v => !v)}
+            aria-label="Open navigation menu"
           >
             <Menu size={20} />
           </button>
@@ -97,7 +101,7 @@ export default function App() {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 p-4 sm:p-6 pb-24 md:pb-6 overflow-auto">
+        <main className="flex-1 p-4 sm:p-6 md:pb-6 overflow-auto">
           {currentPage === 'home' && <HomePage onNavigate={navigate} />}
           {currentPage === 'sorting' && (
             <SortingVisualizer key={currentAlgorithm} initialAlgorithm={currentAlgorithm} />
@@ -110,9 +114,6 @@ export default function App() {
           )}
         </main>
       </div>
-
-      {/* Mobile Bottom Nav */}
-      <BottomNav currentPage={currentPage} onNavigate={navigate} />
     </div>
   );
 }

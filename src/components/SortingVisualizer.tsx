@@ -119,8 +119,7 @@ export default function SortingVisualizer({ initialAlgorithm = 'bubble' }: Props
       {/* Bar chart */}
       <div className="bg-bg-surface border border-bg-overlay rounded-xl p-4">
         <div
-          className="flex items-end gap-px w-full"
-          style={{ height: 240 }}
+          className="flex items-end gap-px w-full h-[180px] sm:h-[240px]"
           aria-label="Sorting visualization"
         >
           {displayArray.map((val, idx) => (
@@ -139,7 +138,7 @@ export default function SortingVisualizer({ initialAlgorithm = 'bubble' }: Props
 
         {/* Step description */}
         {currentFrame && (
-          <div className="mt-3 text-center text-sm text-slate-400 min-h-[1.5rem]">
+          <div className="mt-3 text-center text-xs sm:text-sm text-slate-400 min-h-[1.5rem]">
             {currentFrame.description}
           </div>
         )}
@@ -176,8 +175,8 @@ export default function SortingVisualizer({ initialAlgorithm = 'bubble' }: Props
         onSpeedChange={setSpeed}
         onSeek={setFrameIdx}
         extraControls={
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <label className="text-xs text-slate-400 whitespace-nowrap">Array size: {arraySize}</label>
               <input
                 type="range"
@@ -185,14 +184,14 @@ export default function SortingVisualizer({ initialAlgorithm = 'bubble' }: Props
                 max={100}
                 value={arraySize}
                 onChange={e => handleSizeChange(Number(e.target.value))}
-                className="w-24 accent-violet-500"
+                className="w-full sm:w-24 accent-violet-500"
                 disabled={playing}
               />
             </div>
             <button
               onClick={handleNewArray}
               disabled={playing}
-              className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-bg-elevated hover:bg-bg-overlay text-slate-300 hover:text-white rounded-lg transition-colors disabled:opacity-40"
+              className="flex items-center justify-center gap-1.5 text-xs px-3 py-1.5 bg-bg-elevated hover:bg-bg-overlay text-slate-300 hover:text-white rounded-lg transition-colors disabled:opacity-40 w-full sm:w-auto"
             >
               <Shuffle size={12} />
               New Array
