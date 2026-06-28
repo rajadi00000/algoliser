@@ -119,6 +119,18 @@ export default function PathfindingVisualizer({ initialAlgorithm = 'bfs' }: Prop
     return [row, col];
   }, []);
 
+  const getCellCoordsFromPoint = useCallback((x: number, y: number): [number, number] | null => {
+    const element = document.elementFromPoint(x, y);
+    if (!(element instanceof HTMLElement)) return null;
+    const cellElement = element.closest<HTMLElement>('[data-row][data-col]');
+    if (!cellElement) return null;
+
+    const row = Number(cellElement.dataset.row);
+    const col = Number(cellElement.dataset.col);
+    if (Number.isNaN(row) || Number.isNaN(col)) return null;
+    return [row, col];
+  }, []);
+
   const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     if (playing) return;
     const coords = getCellCoordsFromTarget(e.target);
@@ -136,7 +148,13 @@ export default function PathfindingVisualizer({ initialAlgorithm = 'bfs' }: Prop
     if (!isPointerDownRef.current || playing) return;
     if (drawMode === 'start' || drawMode === 'end') return;
 
-    const coords = getCellCoordsFromTarget(e.target);
+    let coords: [number, number] | null = null;
+    if (e.pointerType === 'touch') {
+      coords = getCellCoordsFromPoint(e.clientX, e.clientY);
+    } else {
+      coords = getCellCoordsFromTarget(e.target);
+    }
+    
     if (!coords) return;
 
     const key = cellKey(coords[0], coords[1]);
@@ -147,7 +165,7 @@ export default function PathfindingVisualizer({ initialAlgorithm = 'bfs' }: Prop
       e.preventDefault();
     }
     handleCellInteract(coords[0], coords[1]);
-  }, [drawMode, getCellCoordsFromTarget, handleCellInteract, playing]);
+  }, [drawMode, getCellCoordsFromTarget, getCellCoordsFromPoint, handleCellInteract, playing]);
 
   const stopPointerInteraction = useCallback(() => {
     isPointerDownRef.current = false;
@@ -318,7 +336,7 @@ export default function PathfindingVisualizer({ initialAlgorithm = 'bfs' }: Prop
       >
         <div
           className="grid gap-px w-full max-w-full mx-auto touch-none"
-          style={{ gridTemplateColumns: `repeat(${COLS}, minmax(0, 1fr))` }}
+          style={{ gridTemplateColumns: `repeat(${COLS}, minmax(0, 1fr))`, touchAction: 'none' }}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={stopPointerInteraction}
