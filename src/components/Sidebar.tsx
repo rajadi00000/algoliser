@@ -1,9 +1,12 @@
-import {
-  BarChart2, Search, Map, Home,
-  ChevronRight, Zap, GitBranch,
-} from 'lucide-react';
+import { ChevronRight, Zap, GitBranch } from 'lucide-react';
 import type { Page } from '../types';
 import { ALGORITHM_META } from '../data/algorithms';
+import {
+  APP_PAGES,
+  getAlgorithmsForPage,
+  getPageUi,
+  isHomePage,
+} from '../navigation';
 
 interface SidebarProps {
   currentPage: Page;
@@ -15,12 +18,7 @@ interface SidebarProps {
   onMobileClose?: () => void;
 }
 
-const NAV_ITEMS = [
-  { page: 'home' as Page,        label: 'Home',        Icon: Home,     color: 'text-violet-400' },
-  { page: 'sorting' as Page,     label: 'Sorting',     Icon: BarChart2, color: 'text-blue-400' },
-  { page: 'searching' as Page,   label: 'Searching',   Icon: Search,   color: 'text-emerald-400' },
-  { page: 'pathfinding' as Page, label: 'Pathfinding', Icon: Map,      color: 'text-amber-400' },
-];
+const NAV_ITEMS = APP_PAGES;
 
 export default function Sidebar({
   currentPage,
@@ -31,9 +29,6 @@ export default function Sidebar({
   mobileOpen = false,
   onMobileClose,
 }: SidebarProps) {
-  const algorithmsForPage = (page: Page) =>
-    ALGORITHM_META.filter(a => a.category === page || (page === 'pathfinding' && a.category === 'pathfinding'));
-
   const handleNavigate = (page: Page, algorithmId?: string) => {
     onNavigate(page, algorithmId);
     onMobileClose?.();
@@ -90,29 +85,26 @@ export default function Sidebar({
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
-        {NAV_ITEMS.map(({ page, label, Icon, color }) => {
+        {NAV_ITEMS.map((page) => {
+          const pageUi = getPageUi(page);
+          const PageIcon = pageUi.icon;
           const isActive = currentPage === page;
-          const algos = ALGORITHM_META.filter(a => {
-            if (page === 'sorting') return a.category === 'sorting';
-            if (page === 'searching') return a.category === 'searching';
-            if (page === 'pathfinding') return a.category === 'pathfinding';
-            return false;
-          });
+          const algos = isHomePage(page) ? [] : getAlgorithmsForPage(page);
 
           return (
             <div key={page}>
               <button
                 onClick={() => onNavigate(page)}
-                title={label}
+                title={pageUi.sidebarLabel}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 group ${
                   isActive
                     ? 'bg-brand/20 text-white'
                     : 'text-slate-400 hover:bg-bg-elevated hover:text-white'
                 } ${collapsed ? 'justify-center' : ''}`}
               >
-                <Icon size={18} className={`flex-shrink-0 ${isActive ? color : 'group-hover:' + color}`} />
+                <PageIcon size={18} className={`flex-shrink-0 ${isActive ? pageUi.color : 'group-hover:' + pageUi.color}`} />
                 {!collapsed && (
-                  <span className="font-medium text-sm flex-1 text-left">{label}</span>
+                  <span className="font-medium text-sm flex-1 text-left">{pageUi.sidebarLabel}</span>
                 )}
                 {!collapsed && isActive && (
                   <span className="text-xs bg-brand/30 text-brand-lighter px-1.5 py-0.5 rounded-full">
@@ -122,7 +114,7 @@ export default function Sidebar({
               </button>
 
               {/* Sub-items */}
-              {!collapsed && isActive && page !== 'home' && (
+              {!collapsed && isActive && !isHomePage(page) && (
                 <div className="ml-4 mt-1 space-y-0.5 border-l border-bg-overlay pl-3">
                   {algos.map(algo => (
                     <button
@@ -180,23 +172,25 @@ export default function Sidebar({
         </div>
 
         <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
-          {NAV_ITEMS.map(({ page, label, Icon, color }) => {
+          {NAV_ITEMS.map((page) => {
+            const pageUi = getPageUi(page);
+            const PageIcon = pageUi.icon;
             const isActive = currentPage === page;
-            const algos = algorithmsForPage(page);
+            const algos = isHomePage(page) ? [] : getAlgorithmsForPage(page);
 
             return (
               <div key={page}>
                 <button
                   onClick={() => handleNavigate(page)}
-                  title={label}
+                  title={pageUi.sidebarLabel}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 group ${
                     isActive
                       ? 'bg-brand/20 text-white'
                       : 'text-slate-400 hover:bg-bg-elevated hover:text-white'
                   }`}
                 >
-                  <Icon size={18} className={`flex-shrink-0 ${isActive ? color : 'group-hover:' + color}`} />
-                  <span className="font-medium text-sm flex-1 text-left">{label}</span>
+                  <PageIcon size={18} className={`flex-shrink-0 ${isActive ? pageUi.color : 'group-hover:' + pageUi.color}`} />
+                  <span className="font-medium text-sm flex-1 text-left">{pageUi.sidebarLabel}</span>
                   {isActive && (
                     <span className="text-xs bg-brand/30 text-brand-lighter px-1.5 py-0.5 rounded-full">
                       {algos.length}
@@ -204,7 +198,7 @@ export default function Sidebar({
                   )}
                 </button>
 
-                {isActive && page !== 'home' && (
+                {isActive && !isHomePage(page) && (
                   <div className="ml-4 mt-1 space-y-0.5 border-l border-bg-overlay pl-3">
                     {algos.map(algo => (
                       <button

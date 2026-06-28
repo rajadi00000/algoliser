@@ -3,7 +3,7 @@ import { Shuffle } from 'lucide-react';
 import Controls from './Controls';
 import AlgorithmInfo from './AlgorithmInfo';
 import { SORT_ALGORITHMS } from '../algorithms/sorting';
-import { getAlgorithmsByCategory } from '../data/algorithms';
+import { getAlgorithmsForPage, getDefaultAlgorithmId } from '../navigation';
 import type { SortFrame, Speed } from '../types';
 import { SPEED_MS } from '../types';
 
@@ -26,8 +26,8 @@ function barColor(
   return '#818cf8';                                    // indigo – default
 }
 
-export default function SortingVisualizer({ initialAlgorithm = 'bubble' }: Props) {
-  const algorithms = useMemo(() => getAlgorithmsByCategory('sorting'), []);
+export default function SortingVisualizer({ initialAlgorithm = getDefaultAlgorithmId('sorting') }: Props) {
+  const algorithms = useMemo(() => getAlgorithmsForPage('sorting'), []);
   const [selectedAlgo, setSelectedAlgo] = useState(initialAlgorithm);
   const [arraySize, setArraySize] = useState(40);
   const [inputArray, setInputArray] = useState<number[]>(() => randomArray(40));

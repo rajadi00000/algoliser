@@ -3,7 +3,7 @@ import { RefreshCw, Target } from 'lucide-react';
 import Controls from './Controls';
 import AlgorithmInfo from './AlgorithmInfo';
 import { SEARCH_ALGORITHMS } from '../algorithms/searching';
-import { getAlgorithmsByCategory } from '../data/algorithms';
+import { getAlgorithmsForPage, getDefaultAlgorithmId } from '../navigation';
 import type { SearchFrame, Speed } from '../types';
 import { SPEED_MS } from '../types';
 
@@ -27,8 +27,8 @@ function cellColor(idx: number, frame: SearchFrame): { bg: string; border: strin
   return { bg: 'bg-bg-elevated', border: 'border-bg-overlay', text: 'text-slate-400' };
 }
 
-export default function SearchingVisualizer({ initialAlgorithm = 'binary' }: Props) {
-  const algorithms = useMemo(() => getAlgorithmsByCategory('searching'), []);
+export default function SearchingVisualizer({ initialAlgorithm = getDefaultAlgorithmId('searching') }: Props) {
+  const algorithms = useMemo(() => getAlgorithmsForPage('searching'), []);
   const [selectedAlgo, setSelectedAlgo] = useState(initialAlgorithm);
   const [arraySize, setArraySize] = useState(20);
   const [inputArray, setInputArray] = useState<number[]>(() => randomSortedArray(20));

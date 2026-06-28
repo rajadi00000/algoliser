@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Eraser, Play, RotateCcw, MousePointer2, Square } from 'lucide-react';
 import AlgorithmInfo from './AlgorithmInfo';
 import { PATHFINDING_ALGORITHMS, createGrid } from '../algorithms/pathfinding';
-import { getAlgorithmsByCategory } from '../data/algorithms';
+import { getAlgorithmsForPage, getDefaultAlgorithmId } from '../navigation';
 import type { GridCell, PathFrame, Speed } from '../types';
 import { SPEED_MS } from '../types';
 
@@ -43,8 +43,8 @@ function buildPathFrames(
   return frames;
 }
 
-export default function PathfindingVisualizer({ initialAlgorithm = 'bfs' }: Props) {
-  const algorithms = useMemo(() => getAlgorithmsByCategory('pathfinding'), []);
+export default function PathfindingVisualizer({ initialAlgorithm = getDefaultAlgorithmId('pathfinding') }: Props) {
+  const algorithms = useMemo(() => getAlgorithmsForPage('pathfinding'), []);
   const [selectedAlgo, setSelectedAlgo] = useState(initialAlgorithm);
   const [grid, setGrid] = useState<GridCell[][]>(() => createGrid(ROWS, COLS));
   const [startCell, setStartCell] = useState<[number, number]>([10, 5]);

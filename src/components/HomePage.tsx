@@ -1,6 +1,7 @@
-import { BarChart2, Search, Map, ArrowRight, Zap, GitBranch, Clock } from 'lucide-react';
+import { ArrowRight, Zap, GitBranch, Clock, BarChart2, Search, Map } from 'lucide-react';
 import type { Page } from '../types';
 import { ALGORITHM_META } from '../data/algorithms';
+import { CONTENT_PAGES, getAlgorithmsForPage, getPageUi } from '../navigation';
 
 interface HomePageProps {
   onNavigate: (page: Page, algorithmId?: string) => void;
@@ -8,40 +9,28 @@ interface HomePageProps {
 
 const CATEGORY_CARDS = [
   {
-    page: 'sorting' as Page,
+    page: CONTENT_PAGES[0],
     title: 'Sorting Algorithms',
     description: 'Watch elements rearrange themselves with bubble, merge, quick, heap, and more.',
-    Icon: BarChart2,
     gradient: 'from-blue-500/20 to-indigo-500/20',
-    border: 'border-blue-500/20 hover:border-blue-400/40',
-    badge: 'bg-blue-500/20 text-blue-300',
-    iconColor: 'text-blue-400',
   },
   {
-    page: 'searching' as Page,
+    page: CONTENT_PAGES[1],
     title: 'Searching Algorithms',
     description: 'Observe how linear, binary, jump, and exponential search locate target values.',
-    Icon: Search,
     gradient: 'from-emerald-500/20 to-teal-500/20',
-    border: 'border-emerald-500/20 hover:border-emerald-400/40',
-    badge: 'bg-emerald-500/20 text-emerald-300',
-    iconColor: 'text-emerald-400',
   },
   {
-    page: 'pathfinding' as Page,
+    page: CONTENT_PAGES[2],
     title: 'Pathfinding Algorithms',
     description: 'Draw mazes and watch BFS, DFS, Dijkstra, A* and Greedy find the shortest path.',
-    Icon: Map,
     gradient: 'from-amber-500/20 to-orange-500/20',
-    border: 'border-amber-500/20 hover:border-amber-400/40',
-    badge: 'bg-amber-500/20 text-amber-300',
-    iconColor: 'text-amber-400',
   },
 ];
 
 const STATS = [
   { label: 'Algorithms', value: ALGORITHM_META.length, Icon: GitBranch },
-  { label: 'Categories', value: 3, Icon: BarChart2 },
+  { label: 'Categories', value: CONTENT_PAGES.length, Icon: BarChart2 },
   { label: 'Interactive', value: '100%', Icon: Zap },
   { label: 'Avg Steps', value: '< 1ms', Icon: Clock },
 ];
@@ -67,13 +56,13 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
           <button
-            onClick={() => onNavigate('sorting')}
+            onClick={() => onNavigate(CONTENT_PAGES[0])}
             className="flex items-center gap-2 px-5 py-2.5 bg-brand hover:bg-brand-dark text-white rounded-xl font-medium text-sm transition-colors shadow-lg shadow-brand/25"
           >
             Start Exploring <ArrowRight size={16} />
           </button>
           <button
-            onClick={() => onNavigate('pathfinding')}
+            onClick={() => onNavigate(CONTENT_PAGES[2])}
             className="flex items-center gap-2 px-5 py-2.5 bg-bg-surface hover:bg-bg-elevated text-slate-300 hover:text-white rounded-xl font-medium text-sm transition-colors border border-bg-overlay"
           >
             <Map size={16} />
@@ -95,19 +84,21 @@ export default function HomePage({ onNavigate }: HomePageProps) {
 
       {/* Category cards */}
       <div className="grid sm:grid-cols-3 gap-4">
-        {CATEGORY_CARDS.map(({ page, title, description, Icon, gradient, border, badge, iconColor }) => {
-          const algos = ALGORITHM_META.filter(a => a.category === page);
+        {CATEGORY_CARDS.map(({ page, title, description, gradient }) => {
+          const pageUi = getPageUi(page);
+          const algos = getAlgorithmsForPage(page);
+          const PageIcon = pageUi.icon;
           return (
             <button
               key={page}
               onClick={() => onNavigate(page)}
-              className={`text-left bg-gradient-to-br ${gradient} border ${border} rounded-2xl p-5 transition-all duration-200 hover:scale-[1.02] group`}
+              className={`text-left bg-gradient-to-br ${gradient} border border-bg-overlay/50 rounded-2xl p-5 transition-all duration-200 hover:scale-[1.02] group`}
             >
               <div className="flex items-start justify-between gap-3 mb-3">
-                <div className={`p-2.5 rounded-xl bg-bg-surface/80 ${iconColor}`}>
-                  <Icon size={22} />
+                <div className={`p-2.5 rounded-xl bg-bg-surface/80 ${pageUi.color}`}>
+                  <PageIcon size={22} />
                 </div>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${badge}`}>
+                <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-white/10 text-white/80">
                   {algos.length} algorithms
                 </span>
               </div>
@@ -140,23 +131,14 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         <h2 className="text-sm font-medium text-slate-400 uppercase tracking-widest">All Algorithms</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
           {ALGORITHM_META.map(algo => {
-            const categoryColor = {
-              sorting: 'border-blue-500/20 hover:border-blue-400/40',
-              searching: 'border-emerald-500/20 hover:border-emerald-400/40',
-              pathfinding: 'border-amber-500/20 hover:border-amber-400/40',
-            }[algo.category];
-            const categoryText = {
-              sorting: 'text-blue-400',
-              searching: 'text-emerald-400',
-              pathfinding: 'text-amber-400',
-            }[algo.category];
+            const pageUi = getPageUi(algo.category as Page);
             return (
               <button
                 key={algo.id}
                 onClick={() => onNavigate(algo.category as Page, algo.id)}
-                className={`text-left bg-bg-surface border ${categoryColor} rounded-xl p-3 transition-all hover:bg-bg-elevated group`}
+                className="text-left bg-bg-surface border border-bg-overlay/50 rounded-xl p-3 transition-all hover:bg-bg-elevated group"
               >
-                <div className={`text-xs font-medium ${categoryText} capitalize mb-0.5`}>{algo.category}</div>
+                <div className={`text-xs font-medium ${pageUi.color} capitalize mb-0.5`}>{pageUi.title}</div>
                 <div className="text-sm text-white font-medium leading-snug">{algo.name}</div>
                 <div className="text-xs text-slate-500 font-mono mt-1">{algo.timeComplexity.average}</div>
               </button>
