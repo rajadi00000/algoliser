@@ -83,11 +83,17 @@ export function getAlgorithmById(id: string) {
 }
 
 export function buildPath(page: Page, algorithmId?: string) {
-  return isHomePage(page) ? '/' : algorithmId ? `/${page}/${algorithmId}` : `/${page}`;
+  const base = import.meta.env.BASE_URL; // e.g. '/Algoliser/' or '/'
+  const prefix = base.replace(/\/$/, ''); // '/Algoliser' or ''
+  if (isHomePage(page)) return base;
+  return algorithmId ? `${prefix}/${page}/${algorithmId}` : `${prefix}/${page}`;
 }
 
 export function parsePathname(pathname: string): NavigationState | null {
-  const [pagePart, algorithmId] = pathname.replace(/^\/+|\/+$/g, '').split('/');
+  const base = import.meta.env.BASE_URL; // e.g. '/Algoliser/' or '/'
+  const prefix = base.replace(/\/$/, ''); // '/Algoliser' or ''
+  const relative = prefix && pathname.startsWith(prefix) ? pathname.slice(prefix.length) : pathname;
+  const [pagePart, algorithmId] = relative.replace(/^\/+|\/+$/g, '').split('/');
 
   if (pagePart && isValidPage(pagePart)) {
     return isHomePage(pagePart) ? { page: pagePart } : { page: pagePart, algorithmId };
